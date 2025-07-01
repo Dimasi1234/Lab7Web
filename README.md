@@ -150,7 +150,7 @@ INSERT INTO artikel (judul, isi, slug) VALUES
 ![Screenshot (129)](https://github.com/user-attachments/assets/6b5da034-4ea0-4cd2-a8f7-8b501af77c57)
 ---
 
-### 8. Membuat Controller `Artikel.php`
+### 8. Tambahkan Controller `Artikel.php`
 - Tambahkan function view
 `app/Controllers/Artikel.php`
 ```php
@@ -164,6 +164,7 @@ public function view($slug) {
 ``` 
 
 ### 9. File Detail (`app/Views/detail/`)
+.
 ```php
 <?= $this->include('template/header'); ?>
 
@@ -182,6 +183,145 @@ $routes->get('/artikel/(:any)', 'Artikel::view/$1');
 ```
 ![Screenshot (130)](https://github.com/user-attachments/assets/05488b4a-7a9d-4cc3-b42a-c214aa2882b6)
 ---
+
+### 11. Tambahkan Controller `Artikel.php`
+- Tambahkan function admin
+```php
+public function admin_index() {
+        $model = new ArtikelModel();
+        $artikel = $model->findAll();
+        $title = 'Daftar Artikel';
+        return view('artikel/admin_index', compact('artikel', 'title'));
+    }
+```
+
+### 12. File admin (`app/Views/admin/artikel`)
+#### `admin_index.php`
+```php
+<?= $this->include('template/admin_header'); ?>
+
+<table class="table">
+    <thead>
+        <tr><th>ID</th><th>Judul</th><th>Status</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+    <?php if($artikel): foreach($artikel as $row): ?>
+    <tr>
+        <td><?= $row['id']; ?></td>
+        <td>
+            <b><?= $row['judul']; ?></b>
+            <p><small><?= substr($row['isi'], 0, 50); ?></small></p>
+        </td>
+        <td><?= $row['status']; ?></td>
+        <td>
+            <a class="btn" href="<?= base_url('/admin/artikel/edit/' . $row['id']); ?>">Ubah</a>
+            <a class="btn btn-danger" onclick="return confirm('Yakin menghapus data?');" href="<?= base_url('/admin/artikel/delete/' . $row['id']); ?>">Hapus</a>
+        </td>
+    </tr>
+    <?php endforeach; else: ?>
+    <tr><td colspan="4">Belum ada data.</td></tr>
+    <?php endif; ?>
+    </tbody>
+</table>
+
+<?= $this->include('template/admin_footer'); ?>
+```
+
+### 13. Routing Tambahan `app/Config/Routes.php`
+```php
+$routes->group('admin', function($routes) {
+    $routes->get('artikel', 'Artikel::admin_index');
+    $routes->add('artikel/add', 'Artikel::add');
+    $routes->add('artikel/edit/(:any)', 'Artikel::edit/$1');
+    $routes->get('artikel/delete/(:any)', 'Artikel::delete/$1');
+});
+```
+![Screenshot (135)](https://github.com/user-attachments/assets/36431954-01f9-4f28-a867-58ac0ae8d8d9)
+---
+
+### 14. Tambahkan Controller `Artikel.php`
+- Tambahkan function add
+```php
+public function add() {
+        $validation = \Config\Services::validation();
+        $validation->setRules(['judul' => 'required']);
+        if ($validation->withRequest($this->request)->run()) {
+            $artikel = new ArtikelModel();
+            $artikel->insert([
+                'judul' => $this->request->getPost('judul'),
+                'isi'   => $this->request->getPost('isi'),
+                'slug'  => url_title($this->request->getPost('judul')),
+            ]);
+            return redirect('admin/artikel');
+        }
+        $title = "Tambah Artikel";
+        return view('artikel/form_add', compact('title'));
+    }
+```
+
+### 15. File add (`app/Views/admin/artikel/add`)
+#### `form_add.php` 
+```php
+<?= $this->include('template/admin_header'); ?>
+
+<h2><?= $title; ?></h2>
+<form action="" method="post">
+    <p><input type="text" name="judul" placeholder="Judul Artikel"></p>
+    <p><textarea name="isi" cols="50" rows="10" placeholder="Isi artikel..."></textarea></p>
+    <p><input type="submit" value="Kirim" class="btn btn-large"></p>
+</form>
+
+<?= $this->include('template/admin_footer'); ?>
+```
+![Screenshot (136)](https://github.com/user-attachments/assets/c22c1cc9-314f-4244-8c29-08b7e3cfebbe)
+---
+
+### 16. Tambahkan Controller `Artikel.php`
+- Tambahkan function edit
+```php
+public function edit($id) {
+        $artikel = new ArtikelModel();
+        $validation = \Config\Services::validation();
+        $validation->setRules(['judul' => 'required']);
+        if ($validation->withRequest($this->request)->run()) {
+            $artikel->update($id, [
+                'judul' => $this->request->getPost('judul'),
+                'isi'   => $this->request->getPost('isi'),
+            ]);
+            return redirect('admin/artikel');
+        }
+        $data = $artikel->where('id', $id)->first();
+        $title = "Edit Artikel";
+        return view('artikel/form_edit', compact('title', 'data'));
+    }
+```
+
+### 17. File edit (`app/Views/admin/artikel/edit`)
+#### `edit.php`
+```php
+<?= $this->include('template/admin_header'); ?>
+
+<h2><?= $title; ?></h2>
+<form action="" method="post">
+    <p><input type="text" name="judul" value="<?= $data['judul']; ?>"></p>
+    <p><textarea name="isi" cols="50" rows="10"><?= $data['isi']; ?></textarea></p>
+    <p><input type="submit" value="Kirim" class="btn btn-large"></p>
+</form>
+
+<?= $this->include('template/admin_footer'); ?>
+```
+![Screenshot (137)](https://github.com/user-attachments/assets/4c595458-526b-46e7-9f36-19c35ca150b9)
+---
+
+### 18. Tambahkan Controller `Artikel.php`
+- Tambahkan function delete
+```php
+public function delete($id) {
+        $artikel = new ArtikelModel();
+        $artikel->delete($id);
+        return redirect('admin/artikel');
+    }
+```
 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
