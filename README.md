@@ -91,6 +91,98 @@ database.default.DBDriver = MySQLi
 ![Screenshot (133)](https://github.com/user-attachments/assets/e64e5efa-3489-4dc0-866b-479421815265)
 ---
 
+### 3. Membuat Model `ArtikelModel.php`
+`app/Models/ArtikelModel.php`
+![Screenshot (134)](https://github.com/user-attachments/assets/c7b4997f-8c1e-4451-b6af-edc2674c618a)
+---
+
+### 4. Membuat Controller `Artikel.php`
+`app/Controllers/Artikel.php`
+```php
+namespace App\Controllers;
+use App\Models\ArtikelModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
+
+class Artikel extends BaseController
+{
+    public function index() {
+        $model = new ArtikelModel();
+        $artikel = $model->findAll();
+        $title = 'Daftar Artikel';
+        return view('artikel/index', compact('artikel', 'title'));
+    }
+}
+```
+
+### 5. File View (`app/Views/artikel/`)
+```php
+<?= $this->include('template/header'); ?>
+
+<?php if($artikel): foreach($artikel as $row): ?>
+<article class="entry">
+    <h2><a href="<?= base_url('/artikel/' . $row['slug']); ?>"><?= $row['judul']; ?></a></h2>
+    <img src="<?= base_url('/gambar/' . $row['gambar']); ?>" alt="<?= $row['judul']; ?>">
+    <p><?= substr($row['isi'], 0, 200); ?></p>
+</article>
+<hr class="divider" />
+<?php endforeach; else: ?>
+<article class="entry">
+    <h2>Belum ada data.</h2>
+</article>
+<?php endif; ?>
+
+<?= $this->include('template/footer'); ?>
+```
+
+### 6. Routing Tambahan `app/Config/Routes.php`
+```php
+$routes->get('/artikel', 'Artikel::index');
+```
+![Screenshot (128)](https://github.com/user-attachments/assets/0ef95bb2-6721-4f24-ab55-45320126d8f2)
+---
+
+### 7. Data Dummy SQL
+```sql
+INSERT INTO artikel (judul, isi, slug) VALUES
+('Artikel pertama', 'Lorem Ipsum adalah contoh teks...', 'artikel-pertama'),
+('Artikel kedua', 'Tidak seperti anggapan banyak orang...', 'artikel-kedua');
+```
+![Screenshot (129)](https://github.com/user-attachments/assets/6b5da034-4ea0-4cd2-a8f7-8b501af77c57)
+---
+
+### 8. Membuat Controller `Artikel.php`
+- Tambahkan function view
+`app/Controllers/Artikel.php`
+```php
+public function view($slug) {
+        $model = new ArtikelModel();
+        $artikel = $model->where(['slug' => $slug])->first();
+        if (!$artikel) throw PageNotFoundException::forPageNotFound();
+        $title = $artikel['judul'];
+        return view('artikel/detail', compact('artikel', 'title'));
+    }
+``` 
+
+### 9. File Detail (`app/Views/detail/`)
+```php
+<?= $this->include('template/header'); ?>
+
+<article class="entry">
+    <h2><?= $artikel['judul']; ?></h2>
+    <img src="<?= base_url('/gambar/' . $artikel['gambar']); ?>" alt="<?= $artikel['judul']; ?>">
+    <p><?= $artikel['isi']; ?></p>
+</article>
+
+<?= $this->include('template/footer'); ?>
+```
+
+### 10. Routing Tambahan `app/Config/Routes.php`
+```php
+$routes->get('/artikel/(:any)', 'Artikel::view/$1');
+```
+![Screenshot (130)](https://github.com/user-attachments/assets/05488b4a-7a9d-4cc3-b42a-c214aa2882b6)
+---
+
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
