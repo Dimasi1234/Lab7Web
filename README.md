@@ -323,6 +323,9 @@ public function delete($id) {
     }
 ```
 
+### 📌 Kesimpulan
+CRUD berhasil dibuat menggunakan CodeIgniter 4. Konsep MVC, validasi form, routing grup admin dan view template telah diterapkan.
+
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
