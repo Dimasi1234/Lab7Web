@@ -11,6 +11,7 @@
 
 1. **Persiapan:**
    - Instalasi XAMPP, aktifkan ekstensi PHP (json, xml, intl, mysqlnd).
+      Install XAMPP di: https://www.apachefriends.org/download.html
    - Buat folder `lab11_ci`, ekstrak CI4.
 
 2. **Routing dan Controller:**
