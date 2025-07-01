@@ -56,6 +56,8 @@
 ### Hasil
 > **![Screenshot (114)](https://github.com/user-attachments/assets/04d13db6-80d9-4f8f-a5ab-83db4f6a9283)**
 
+---
+
 ## Praktikum 2: Framework Lanjutan (CRUD Artikel)
 
 ### Tujuan
@@ -325,6 +327,167 @@ public function delete($id) {
 
 ### 📌 Kesimpulan
 CRUD berhasil dibuat menggunakan CodeIgniter 4. Konsep MVC, validasi form, routing grup admin dan view template telah diterapkan.
+
+---
+
+## Praktikum 3: View Layout & View Cell
+
+### Tujuan
+- Pembuatan layout dengan `extend()` dan `section()`
+- Komponen modular pakai View Cell
+- Dinamis menampilkan artikel terkini
+- Filter artikel berdasarkan kategori
+
+### 1. Tambahkan Kolom created_at di Database
+```sql
+ALTER TABLE artikel ADD created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+```
+
+### 2. Membuat Layout Utama
+- Buat folder 'layout' di 'app/views' lalu buat file 'main.php'
+```php
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><?= $title ?? 'My Website' ?></title>
+    <link rel="stylesheet" href="<?= base_url('/style.css');?>">
+</head>
+<body>
+    <div id="container">
+        <header>
+            <h1>Layout Sederhana</h1>
+        </header>
+        <nav>
+            <a href="<?= base_url('/');?>" class="active">Home</a>
+            <a href="<?= base_url('/artikel');?>">Artikel</a>
+            <a href="<?= base_url('/about');?>">About</a>
+            <a href="<?= base_url('/contact');?>">Kontak</a>
+        </nav>
+        <section id="wrapper">
+            <section id="main">
+                <?= $this->renderSection('content') ?>
+            </section>
+            <aside id="sidebar">
+                <?= view_cell('App\\Cells\\ArtikelTerkini::render') ?>
+
+                <div class="widget-box">
+                    <h3 class="title">Widget Header</h3>
+                    <ul>
+                        <li><a href="#">Widget Link</a></li>
+                        <li><a href="#">Widget Link</a></li>
+                    </ul>
+                </div>
+                <div class="widget-box">
+                    <h3 class="title">Widget Text</h3>
+                    <p>Vestibulum lorem elit, iaculis in nisl volutpat, malesuada tincidunt arcu.</p>
+                </div>
+            </aside>
+        </section>
+        <footer>
+            <p>&copy; 2021 - Universitas Pelita Bangsa</p>
+        </footer>
+    </div>
+</body>
+</html>
+```
+
+### 3. Modifikasi File View
+- Ubah app/Views/home.php agar sesuai dengan layout baru:
+```php
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
+
+<h1><?= $title; ?></h1>
+<hr>
+<p><?= $content; ?></p>
+
+<?= $this->endSection() ?>
+```
+- ubah juga file view yang lain mengikuti contoh home.php
+
+### 4. Membuat Class View Cell
+- Buat folder 'Cells' di dalam 'app/'. Buat file 'ArtikelTerkini.php' di dalam 'app/Cells/' dengan kode berikut:
+```php
+<?php
+
+namespace App\Cells;
+
+use App\Models\ArtikelModel;
+
+class ArtikelTerkini
+{
+    public function render($kategori = null)
+{
+    $model = new \App\Models\ArtikelModel();
+    $query = $model->orderBy('created_at', 'DESC')->limit(5);
+
+    if (!empty($kategori)) {
+        $query->where('kategori', $kategori);
+    }
+
+    $artikel = $query->findAll();
+    return view('components/artikel_terkini', ['artikel' => $artikel]);
+}
+
+}
+
+```
+
+### 5. Membuat View untuk View Cell
+- Buat folder 'components' di dalam 'app/Views/'. Buat file 'artikel_terkini.php' di dalam 'app/Views/components/' dengan kode berikut:
+```php
+<h3>Artikel Terkini</h3>
+<ul>
+    <?php foreach ($artikel as $row): ?>
+        <li><a href="<?= base_url('/artikel/' . $row['slug']) ?>"><?= $row['judul'] ?></a></li>
+    <?php endforeach; ?>
+</ul>
+```
+### Hasil view biasa & view cell
+-view biasa
+![Screenshot (129)](https://github.com/user-attachments/assets/b6574ad7-7075-4d0b-a2ee-bc44e777b88c)
+---
+-view cell
+![Screenshot (140)](https://github.com/user-attachments/assets/c44986b8-f930-4738-9b3b-a4d6ee767238)
+---
+
+### 1: Apa manfaat View Layout?
+### Jawab :
+View Layout membuat kode HTML lebih terstruktur dan tidak diulang-ulang. Kita cukup buat 1 file layout, lalu view lain hanya isi kontennya saja. Sangat bermanfaat untuk efisiensi dan pemeliharaan.
+
+### Soal 2: Apa beda View Cell vs View biasa?
+### Jawab :
+- View biasa: hanya menampilkan konten statis/dinamis langsung dari controller.
+- View Cell: komponen modular, bisa digunakan berulang di banyak halaman tanpa mengganggu controller utama. Cocok untuk sidebar, header, notifikasi, dll.
+
+### Soal 3: Modifikasi View Cell untuk tampilkan artikel dari kategori tertentu.
+### Jawab :
+- tambahkan kolom 'kategori' di tabel 'artikel'
+```sql
+ALTER TABLE artikel ADD COLUMN kategori VARCHAR(100) DEFAULT 'Teknologi';
+```
+- Tambahkan parameter 'kategori':
+```php
+public function render($kategori = null)
+{
+    $model = new ArtikelModel();
+    $query = $model->orderBy('created_at', 'DESC')->limit(5);
+
+    if ($kategori !== null) {
+        $query->where('kategori', $kategori);
+    }
+
+    $artikel = $query->findAll();
+    return view('components/artikel_terkini', ['artikel' => $artikel]);
+}
+```
+- 📄 Panggil di layout:
+```php
+<?= view_cell('App\\Cells\\ArtikelTerkini::render', ['kategori' => 'Teknologi']) ?>
+```
+
+---
 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
