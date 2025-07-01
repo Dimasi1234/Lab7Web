@@ -62,6 +62,34 @@
 - Memahami konsep Model
 - Menerapkan operasi CRUD (Create, Read, Update, Delete)
 
+### 1. Membuat Database `lab_ci4` dan table 'artikel'
+```sql
+CREATE DATABASE lab_ci4;
+
+CREATE TABLE artikel (
+  id INT(11) AUTO_INCREMENT,
+  judul VARCHAR(200) NOT NULL,
+  isi TEXT,
+  gambar VARCHAR(200),
+  status TINYINT(1) DEFAULT 0,
+  slug VARCHAR(200),
+  PRIMARY KEY(id)
+);
+```
+![Screenshot (132)](https://github.com/user-attachments/assets/de943d95-be89-472a-a234-01eb7b7fec74)
+---
+
+### 2. Konfigurasi `.env`
+```env
+# Sesuaikan dengan MySQL mu
+database.default.hostname = localhost
+database.default.database = lab_ci4
+database.default.username = root
+database.default.password = 
+database.default.DBDriver = MySQLi
+```
+![Screenshot (133)](https://github.com/user-attachments/assets/e64e5efa-3489-4dc0-866b-479421815265)
+---
 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
