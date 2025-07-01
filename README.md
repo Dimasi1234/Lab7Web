@@ -56,6 +56,13 @@
 ### Hasil
 > **![Screenshot (114)](https://github.com/user-attachments/assets/04d13db6-80d9-4f8f-a5ab-83db4f6a9283)**
 
+## Praktikum 2: Framework Lanjutan (CRUD Artikel)
+
+### Tujuan
+- Memahami konsep Model
+- Menerapkan operasi CRUD (Create, Read, Update, Delete)
+
+
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
