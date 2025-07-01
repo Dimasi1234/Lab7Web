@@ -1,5 +1,4 @@
 # Lab7Web - Praktikum Pemrograman Web 2
-```
 
 ## Praktikum 1: PHP Framework (CodeIgniter 4)
 
