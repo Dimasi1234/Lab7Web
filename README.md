@@ -58,5 +58,5 @@
 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
-- URL: `https://github.com/Dimasi1234/Lab7Web`
+- URL: https://github.com/Dimasi1234/Lab7Web
 ```
