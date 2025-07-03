@@ -489,6 +489,134 @@ public function render($kategori = null)
 
 ---
 
+## Praktikum 4: Modul Login & Auth
+
+## Tujuan :
+- Sistem login berbasis session
+- Password hashing (password_hash, password_verify)
+- Auth Filter untuk proteksi halaman admin
+- Seeder untuk user dummy
+
+### 1. Buat tabel
+- Buat tabel User
+```sql
+CREATE TABLE user (
+  id INT(11) AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(200) NOT NULL,
+  useremail VARCHAR(200),
+  userpassword VARCHAR(200)
+);
+```
+
+### 2. Buat Model
+- Buat UserModel.php 'app/Models'
+```php
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class UserModel extends Model
+{
+    protected $table = 'user';
+    protected $primaryKey = 'id';
+    protected $useAutoIncrement = true;
+    protected $allowedFields = ['username', 'useremail', 'userpassword'];
+}
+```
+
+### 3. Buat Controller
+- Buat User.php 'app/Controllers'
+```php
+<?php
+
+namespace App\Controllers;
+
+use App\Models\UserModel;
+
+class User extends BaseController
+{
+    public function login()
+    {
+        helper(['form']);
+        $email = $this->request->getPost('email');
+        $password = $this->request->getPost('password');
+
+        // Jika belum submit, tampilkan form login
+        if (!$email) {
+            return view('user/login');
+        }
+
+        $session = session();
+        $model = new UserModel();
+        $login = $model->where('useremail', $email)->first();
+
+        if ($login) {
+            $pass = $login['userpassword'];
+            if (password_verify($password, $pass)) {
+                $session->set([
+                    'user_id' => $login['id'],
+                    'user_name' => $login['username'],
+                    'user_email' => $login['useremail'],
+                    'logged_in' => TRUE,
+                ]);
+                return redirect()->to('/admin/artikel');
+            } else {
+                $session->setFlashdata("flash_msg", "Password salah.");
+                return redirect()->to('/user/login');
+            }
+        } else {
+            $session->setFlashdata("flash_msg", "Email tidak terdaftar.");
+            return redirect()->to('/user/login');
+        }
+    }
+
+    public function logout()
+    {
+        session()->destroy();
+        return redirect()->to('/user/login');
+    }
+}
+```
+
+### 4. Buat view
+- Buat folder user di 'app/views' lalu didalam folder user buat login.php
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="<?= base_url('/style.css'); ?>">
+</head>
+<body>
+    <div id="login-wrapper">
+        <h1>Sign In</h1>
+
+        <?php if(session()->getFlashdata('flash_msg')): ?>
+            <div class="alert alert-danger">
+                <?= session()->getFlashdata('flash_msg') ?>
+            </div>
+        <?php endif; ?>
+
+        <form action="" method="post">
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" name="email" required value="<?= set_value('email') ?>">
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+</body>
+</html>
+```
+
+### 5. 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
