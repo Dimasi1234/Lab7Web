@@ -1,5 +1,3 @@
-
-https://github.com/user-attachments/assets/6b0c53ba-f1b3-4ca4-b704-6455991b7a31
 # Lab7Web - Praktikum Pemrograman Web 2
 
 ## Praktikum 1: PHP Framework (CodeIgniter 4)
