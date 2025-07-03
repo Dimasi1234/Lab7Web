@@ -1,3 +1,5 @@
+
+https://github.com/user-attachments/assets/6b0c53ba-f1b3-4ca4-b704-6455991b7a31
 # Lab7Web - Praktikum Pemrograman Web 2
 
 ## Praktikum 1: PHP Framework (CodeIgniter 4)
@@ -615,9 +617,113 @@ class User extends BaseController
 </body>
 </html>
 ```
+![Screenshot (142)](https://github.com/user-attachments/assets/466836a1-1417-4af5-ad04-a69c7a249ec8)
+---
 
-### 5. 
+
+### 5. Buat Seeder
+- Buat 'UserSeeder.php'
+```php
+php spark make:seeder UserSeeder
+```
+- Buka 'app/Database/Seeds/UserSeeder.php'
+```php
+<?php
+
+namespace App\Database\Seeds;
+
+use CodeIgniter\Database\Seeder;
+
+class UserSeeder extends Seeder
+{
+    public function run()
+    {
+        $model = model('App\Models\UserModel');
+        $model->insert([
+            'username' => 'admin',
+            'useremail' => 'siadmin11@email.com',
+            'userpassword' => password_hash('admin123', PASSWORD_DEFAULT),
+        ]);
+    }
+}
+```
+```php
+php spark db:seed UserSeeder
+```
+
+### 6. Buat filter
+- Buat Auth.php di 'app/Filters'
+```php
+<?php
+
+namespace App\Filters;
+
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\Filters\FilterInterface;
+
+class Auth implements FilterInterface
+{
+    public function before(RequestInterface $request, $arguments = null)
+    {
+        if (!session()->get('logged_in')) {
+            return redirect()->to('/user/login');
+        }
+    }
+
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    {
+        // Kosong
+    }
+}
+```
+- Tambahkan 'app/Config/Filters.php' di bagian $alies
+```php
+'auth' => App\Filters\Auth::class
+```
+
+### 7. Buat Log out
+- Tambah fungsi log out di Controller 'app/Controllers/User.php'
+```php
+public function logout()
+```
+- Tambahkan tombol log out di 'app/views/artikel/admin_index.php'
+```php
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
+
+<h2>Daftar Artikel (Admin)</h2>
+<a class="btn" href="<?= base_url('/admin/artikel/add'); ?>">Tambah Artikel</a>
+<a class="btn btn-danger" href="<?= base_url('/user/logout'); ?>">Logout</a>
+
+<table class="table">
+    <thead>
+        <tr><th>ID</th><th>Judul</th><th>Status</th><th>Aksi</th></tr>
+    </thead>
+    <tbody>
+        <?php if($artikel): foreach($artikel as $row): ?>
+        <tr>
+            <td><?= $row['id']; ?></td>
+            <td><strong><?= $row['judul']; ?></strong><br><small><?= substr($row['isi'], 0, 50); ?>...</small></td>
+            <td><?= $row['status']; ?></td>
+            <td>
+                <a class="btn" href="<?= base_url('/admin/artikel/edit/' . $row['id']); ?>">Ubah</a>
+                <a class="btn btn-danger" onclick="return confirm('Yakin menghapus data?');" href="<?= base_url('/admin/artikel/delete/' . $row['id']); ?>">Hapus</a>
+            </td>
+        </tr>
+        <?php endforeach; else: ?>
+        <tr><td colspan="4">Belum ada data.</td></tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+<?= $this->endSection() ?>
+```
+![Screenshot (143)](https://github.com/user-attachments/assets/ef392192-7914-4bdc-8c27-b2f8e5ca16bb)
+---
+https://github.com/user-attachments/assets/0183f3b3-6c71-43b5-a8db-9f13ded16ea5
+
+---
+
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
-```
