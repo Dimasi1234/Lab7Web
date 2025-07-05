@@ -735,13 +735,13 @@ https://github.com/user-attachments/assets/0183f3b3-6c71-43b5-a8db-9f13ded16ea5
 public function admin_index()
 {
     $title = 'Daftar Artikel';
-    $q = $this->request->getVar('q') ?? ''; // ambil query pencarian
+    $q = $this->request->getVar('q') ?? '';
 
     $model = new \App\Models\ArtikelModel();
     $data = [
         'title'   => $title,
         'q'       => $q,
-        'artikel' => $model->like('judul', $q)->paginate(10), // 10 per halaman
+        'artikel' => $model->like('judul', $q)->paginate(10),
         'pager'   => $model->pager,
     ];
     return view('artikel/admin_index', $data);
@@ -760,6 +760,131 @@ public function admin_index()
 ![Screenshot (145)](https://github.com/user-attachments/assets/9a3853d3-c8fb-43bf-a2d2-b0b52d8ad34f)
 
 ---
+
+## Praktikum 6: Upload File Gambar
+
+## Tujuan :
+- Memahami konsep dasar file upload di CodeIgniter 4
+- Menambahkan fitur unggah gambar saat membuat artikel
+
+### 1. Modifikasi Artikel.php pada bagian method add()
+```php
+public function add()  
+{
+    $validation = \Config\Services::validation();
+    $validation->setRules(['judul' => 'required']);
+
+    $isDataValid = $validation->withRequest($this->request)->run();
+
+    if ($isDataValid)
+    {
+        $file = $this->request->getFile('gambar');
+
+        if ($file->isValid() && !$file->hasMoved()) {
+            $file->move(ROOTPATH . 'public/gambar');
+        }
+
+        $artikel = new \App\Models\ArtikelModel();
+        $artikel->insert([
+            'judul'  => $this->request->getPost('judul'),
+            'isi'    => $this->request->getPost('isi'),
+            'slug'   => url_title($this->request->getPost('judul')),
+            'gambar' => $file->getName(),
+        ]);
+
+        return redirect('admin/artikel');
+    }
+
+    $title = "Tambah Artikel";
+    return view('artikel/form_add', compact('title'));
+}
+```
+### 2. Ubah 'form_add.php' dan 'form_edit.php'
+- Tambahkan di 'views/artikel/form_add.php'
+```php
+<p><input type="file" name="gambar" required></p>
+```
+![Screenshot (147)](https://github.com/user-attachments/assets/b84459ec-8a75-46c1-a55a-91b7a20db94e)
+![Screenshot (148)](https://github.com/user-attachments/assets/076599cc-a36c-439d-8737-436613f19f39)
+---
+### 3. Ubah 'detail.php'
+- Ubah 'detail.php' di 'app/Views/artikel/detail.php' agar bisa menampilkan gambar
+```php
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
+
+<article class="entry">
+    <h2><?= $artikel['judul']; ?></h2>
+
+    <?php if (!empty($artikel['gambar'])): ?>
+        <img src="<?= base_url('/gambar/' . $artikel['gambar']) ?>" alt="<?= esc($artikel['judul']) ?>" style="max-width: 100%; height: auto; margin: 1em 0;">
+    <?php endif; ?>
+
+    <p><?= $artikel['isi']; ?></p>
+</article>
+
+<?= $this->endSection() ?>
+```
+### 4. Ubah 'index.php'
+- Ubah 'index.php' di 'app/Views/artikel/index.php' agar bisa menampilkan gambar
+```php
+<?= $this->extend('layout/main') ?>
+<?= $this->section('content') ?>
+
+<?php if ($artikel): foreach ($artikel as $row): ?>
+<article class="entry">
+    <h2><a href="<?= base_url('/artikel/' . $row['slug']); ?>"><?= $row['judul']; ?></a></h2>
+    <img src="<?= base_url('gambar/' . $row['gambar']) ?>" 
+     alt="<?= esc($row['judul']) ?>" 
+     style="width: 200px; height: auto; object-fit: cover; margin: 1em 0;">
+    <p><?= substr($row['isi'], 0, 200); ?></p>
+</article>
+<hr class="divider" />
+<?php endforeach; else: ?>
+<article class="entry">
+    <h2>Belum ada data.</h2>
+</article>
+<?php endif; ?>
+
+<?= $this->endSection() ?>
+```
+### 5. Update 'Artikel.php' dibagian method edit()
+- buka 'app/controller/Artikel.php'
+```php
+public function edit($id)
+    {
+        $artikel = new \App\Models\ArtikelModel();
+
+        $validation = \Config\Services::validation();
+        $validation->setRules(['judul' => 'required']);
+
+        if ($validation->withRequest($this->request)->run()) {
+            $dataToUpdate = [
+                'judul' => $this->request->getPost('judul'),
+                'isi'   => $this->request->getPost('isi'),
+            ];
+
+            $file = $this->request->getFile('gambar');
+            if ($file && $file->isValid() && !$file->hasMoved()) {
+                $file->move(ROOTPATH . 'public/gambar');
+                $dataToUpdate['gambar'] = $file->getName();
+            }
+
+            $artikel->update($id, $dataToUpdate);
+            return redirect('admin/artikel');
+        }
+
+        $data = $artikel->find($id);
+        $title = "Edit Artikel";
+        return view('artikel/form_edit', compact('title', 'data'));
+    }
+```
+### 6. Buat folder 'gambar' di public untu menyimpan gambar
+![Screenshot (149)](https://github.com/user-attachments/assets/a1915dd3-f730-4edb-a06d-8fca498eeaf1)
+![Screenshot (150)](https://github.com/user-attachments/assets/36cb8e62-118b-44dc-845e-a4d339144b73)
+https://github.com/user-attachments/assets/260d7bb8-d87a-4aef-8c52-c796760fa38c
+
+
 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
