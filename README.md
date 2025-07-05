@@ -881,10 +881,12 @@ public function edit($id)
 ```
 ### 6. Buat folder 'gambar' di public untu menyimpan gambar
 ![Screenshot (149)](https://github.com/user-attachments/assets/a1915dd3-f730-4edb-a06d-8fca498eeaf1)
+---
 ![Screenshot (150)](https://github.com/user-attachments/assets/36cb8e62-118b-44dc-845e-a4d339144b73)
+---
 https://github.com/user-attachments/assets/260d7bb8-d87a-4aef-8c52-c796760fa38c
 
-
+---
 
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
