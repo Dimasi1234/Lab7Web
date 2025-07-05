@@ -722,6 +722,45 @@ https://github.com/user-attachments/assets/0183f3b3-6c71-43b5-a8db-9f13ded16ea5
 
 ---
 
+## Praktikum 5: Pagination dan Pencarian
+
+## Tujuan :
+- Memahami konsep dasar Pagination di CodeIgniter 4
+- Memahami konsep Pencarian Data
+- Implementasi Pagination + Search dalam halaman admin artikel
+
+### 1. Buat pagination dan seacrh
+- Modifikasi 'admin_index()' di 'app/controller/Artikel.php'
+```php
+public function admin_index()
+{
+    $title = 'Daftar Artikel';
+    $q = $this->request->getVar('q') ?? ''; // ambil query pencarian
+
+    $model = new \App\Models\ArtikelModel();
+    $data = [
+        'title'   => $title,
+        'q'       => $q,
+        'artikel' => $model->like('judul', $q)->paginate(10), // 10 per halaman
+        'pager'   => $model->pager,
+    ];
+    return view('artikel/admin_index', $data);
+}
+```
+- Update 'app/Views/artikel/admin_index.php' dan tambahkan
+```php
+<form method="get" class="form-search">
+    <input type="text" name="q" value="<?= esc($q) ?>" placeholder="Cari data">
+    <input type="submit" value="Cari" class="btn btn-primary">
+</form>
+```
+```php
+<?= $pager->only(['q'])->links(); ?>
+```
+![Screenshot (145)](https://github.com/user-attachments/assets/9a3853d3-c8fb-43bf-a2d2-b0b52d8ad34f)
+
+---
+
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
