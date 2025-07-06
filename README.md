@@ -888,6 +888,174 @@ https://github.com/user-attachments/assets/260d7bb8-d87a-4aef-8c52-c796760fa38c
 
 ---
 
+## Praktikum 7: Relasi Tabel dan Query Builder
+## Tujuan :
+- Menyambungkan tabel artikel dan kategori (relasi One-to-Many)
+- Menggunakan Query Builder + JOIN
+- Menampilkan artikel dengan nama kategori
+- Menambah, mengedit, dan mencari artikel berdasarkan kategori
+
+### 1. Tambahkan Tabel & Relasi
+- Buat tabel 'kategori'
+```sql
+CREATE TABLE kategori (
+    id_kategori INT(11) AUTO_INCREMENT PRIMARY KEY,
+    nama_kategori VARCHAR(100) NOT NULL,
+    slug_kategori VARCHAR(100)
+);
+```
+- Ubah tabel 'artikel' agar punya 'id_kategori'
+```sql
+ALTER TABLE artikel
+ADD COLUMN id_kategori INT(11),
+ADD CONSTRAINT fk_kategori_artikel
+FOREIGN KEY (id_kategori) REFERENCES kategori(id_kategori);
+```
+### 2. Model
+- Buat 'KategoriModel.php' di 'app/Models/KategoriModel.php'
+```php
+<?php
+
+namespace App\Models;
+use CodeIgniter\Model;
+
+class KategoriModel extends Model
+{
+    protected $table = 'kategori';
+    protected $primaryKey = 'id_kategori';
+    protected $useAutoIncrement = true;
+    protected $allowedFields = ['nama_kategori', 'slug_kategori'];
+}
+```
+- Update 'ArtikelModel.php' Tambahkan method untuk join ke kategori
+```php
+public function getArtikelDenganKategori()
+{
+    return $this->db->table('artikel')
+        ->select('artikel.*, kategori.nama_kategori')
+        ->join('kategori', 'kategori.id_kategori = artikel.id_kategori')
+        ->get()
+        ->getResultArray();
+}
+```
+### 3. Controller
+- Buka 'Artikel.php' di 'app/Controller/Artikel.php' update pada bagian method , ,  dan 
+'index()'
+```php
+public function index()
+{
+    $title = 'Daftar Artikel';
+    $model = new ArtikelModel();
+    $artikel = $model->getArtikelDenganKategori();
+    return view('artikel/index', compact('artikel', 'title'));
+}
+```
+'admin_index()'
+```php
+public function admin_index()
+{
+    $title = 'Daftar Artikel (Admin)';
+    $model = new ArtikelModel();
+
+    $q = $this->request->getVar('q') ?? '';
+    $kategori_id = $this->request->getVar('kategori_id') ?? '';
+
+    $builder = $model->table('artikel')
+        ->select('artikel.*, kategori.nama_kategori')
+        ->join('kategori', 'kategori.id_kategori = artikel.id_kategori');
+
+    if ($q !== '') $builder->like('artikel.judul', $q);
+    if ($kategori_id !== '') $builder->where('artikel.id_kategori', $kategori_id);
+
+    $data['artikel'] = $builder->paginate(10);
+    $data['pager'] = $model->pager;
+    $data['q'] = $q;
+    $data['kategori_id'] = $kategori_id;
+
+    $kategoriModel = new KategoriModel();
+    $data['kategori'] = $kategoriModel->findAll();
+
+    $data['title'] = $title;
+
+    return view('artikel/admin_index', $data);
+}
+```
+'add()'
+```php
+public function add()
+{
+    $validation = \Config\Services::validation();
+    $validation->setRules([
+        'judul' => 'required',
+        'id_kategori' => 'required|integer'
+    ]);
+
+    if ($validation->withRequest($this->request)->run()) {
+        $file = $this->request->getFile('gambar');
+        $namaGambar = '';
+
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $file->move(ROOTPATH . 'public/gambar');
+            $namaGambar = $file->getName();
+        }
+
+        $artikel = new \App\Models\ArtikelModel();
+        $artikel->insert([
+            'judul'       => $this->request->getPost('judul'),
+            'isi'         => $this->request->getPost('isi'),
+            'slug'        => url_title($this->request->getPost('judul')),
+            'gambar'      => $namaGambar,
+            'id_kategori' => $this->request->getPost('id_kategori')
+        ]);
+
+        return redirect()->to('/admin/artikel');
+    }
+
+    $kategoriModel = new \App\Models\KategoriModel();
+    $data['kategori'] = $kategoriModel->findAll();
+    $data['title'] = "Tambah Artikel";
+    return view('artikel/form_add', $data);
+}
+```
+'edit()'
+```php
+public function edit($id)
+{
+    $artikelModel = new \App\Models\ArtikelModel();
+    $dataLama = $artikelModel->find($id);
+
+    $validation = \Config\Services::validation();
+    $validation->setRules([
+        'judul' => 'required',
+        'id_kategori' => 'required|integer'
+    ]);
+
+    if ($validation->withRequest($this->request)->run()) {
+        $dataToUpdate = [
+            'judul'       => $this->request->getPost('judul'),
+            'isi'         => $this->request->getPost('isi'),
+            'id_kategori' => $this->request->getPost('id_kategori')
+        ];
+
+        $file = $this->request->getFile('gambar');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            $file->move(ROOTPATH . 'public/gambar');
+            $dataToUpdate['gambar'] = $file->getName();
+        }
+
+        $artikelModel->update($id, $dataToUpdate);
+        return redirect()->to('/admin/artikel');
+    }
+
+    $kategoriModel = new \App\Models\KategoriModel();
+    $data['kategori'] = $kategoriModel->findAll();
+    $data['data'] = $dataLama;
+    $data['title'] = "Edit Artikel";
+
+    return view('artikel/form_edit', $data);
+}
+```
+
 ### Repository
 - Repository ini berisi hasil praktikum modul 1 CodeIgniter.
 - URL: https://github.com/Dimasi1234/Lab7Web
